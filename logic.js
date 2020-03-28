@@ -1,8 +1,10 @@
+// define urls
 var API_quakes = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
 console.log(API_quakes)
 var API_plates = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
 console.log(API_plates)
 
+// define markers for the map
 function markerSize(magnitude) {
     return magnitude * 4;
 };
@@ -10,6 +12,7 @@ function markerSize(magnitude) {
 
 var earthquakes = new L.LayerGroup();
 
+// setup the call to grab the geojson data for the earthquakes
 d3.json(API_quakes, function(geoJson) {
     L.geoJSON(geoJson.features, {
         pointToLayer: function(geoJsonPoint, latlng) {
@@ -35,6 +38,7 @@ d3.json(API_quakes, function(geoJson) {
     createMap(earthquakes);
 });
 
+// setup the call to grab the geojson data for the plates/fault lines
 var plateBoundary = new L.LayerGroup();
 
 d3.json(API_plates, function(geoJson) {
@@ -48,7 +52,7 @@ d3.json(API_plates, function(geoJson) {
     }).addTo(plateBoundary);
 })
 
-
+// define the marker colors as they relate to the earthquake magnitudes
 function Color(magnitude) {
     if (magnitude > 5) {
         return 'red'
@@ -64,7 +68,7 @@ function Color(magnitude) {
         return 'lightgreen'
     }
 };
-
+// create layers for the map
 function createMap() {
 
     var highContrastMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
@@ -96,7 +100,7 @@ function createMap() {
         accessToken: 'pk.eyJ1Ijoib2xhd3JlbmNlNzk5IiwiYSI6ImNqZXZvcTBmdDBuY3oycXFqZThzbjc5djYifQ.-ChNrBxEIvInNJWiHX5pXg'
     });
 
-
+    // set up the base layer
     var baseLayers = {
         "High Contrast": highContrastMap,
         "Street": streetMap,
@@ -109,26 +113,16 @@ function createMap() {
         "Plate Boundaries": plateBoundary,
     };
 
+    // set up how the initial map should look and the geographical point of reference
     var mymap = L.map('mymap', {
         center: [39.83333, -98.58333],
         zoom: 5,
-        // timeDimension: true,
-        // timeDimensionOptions: {
-        //     timeInterval: "2018-04-01/2018-04-05",
-        //     period: "PT1H"
-        // },
-        // timeDimensionControl: true,
         layers: [streetMap, earthquakes, plateBoundary]
     });
 
     L.control.layers(baseLayers, overlays).addTo(mymap);
-    // L.timeDimension.earthquakes.geoJson(earthquakes).addTo(mymap);
-    // L.control.timeDimension().addTo(mymap);
-    // var player = new L.TimeDimension.Player({}, timeDimension).addTo(mymap);
 
-    // var tdWmsLayer = L.timeDimension.layer.wms(wmsLayer);
-    // tdWmsLayer.addTo(map);
-
+    // set up legend and its placement
     var legend = L.control({ position: 'bottomright' });
 
     legend.onAdd = function(map) {
@@ -149,5 +143,3 @@ function createMap() {
     };
     legend.addTo(mymap);
 }
-
-// createMap()
